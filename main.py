@@ -13,39 +13,49 @@ class Point:
         self.y = y
         self.color = color
 
+    # This can be modified
     def dist(self, x, y):
         return (x - self.x) ** 2 + (y - self.y) ** 2
 
-    
-x_size = 512
-y_size = 512
 
-size = 20
+class VoronoiGenerator:
 
-data = np.zeros((x_size, y_size, 3), dtype=np.uint8)
-points = []
-for i in range(size):
-    p = Point(random.randint(0, x_size), random.randint(0, y_size), [random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)])
-    points.append(p)
+    SIZE = (512, 512)
 
-for x in range(x_size):
-    for y in range(y_size):
-        dist = []
+    def __init__(self, no_points=20):
+        self.no_points = no_points
+
+    def generate(self):
+        data = np.zeros((self.SIZE[0], self.SIZE[1], 3), dtype=np.uint8)
+        points = []
+        # Create central points
+        for i in range(self.no_points):
+            color = [random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)]
+            p = Point(random.randint(0, self.SIZE[0]), random.randint(0, self.SIZE[1]), color)
+            points.append(p)
+
+        # Iterate over board and set color
+        for x in range(self.SIZE[0]):
+            for y in range(self.SIZE[1]):
+                dist = []
+                for point in points:
+                    dist.append(point.dist(x, y))
+                i = dist.index(min(dist))
+                data[x, y] = points[i].color
+
+        # Create black points
         for point in points:
-            dist.append(point.dist(x, y))
-        i = dist.index(min(dist))
-        data[x, y] = points[i].color
+            for x_off in [-1, 0, 1]:
+                for y_off in [-1, 0, 1]:
+                    data[point.x + x_off, point.y + y_off] = [0, 0, 0]
 
-for point in points:
-    data[point.x - 1, point.y - 1] = [0, 0, 0]
-    data[point.x - 1, point.y] = [0, 0, 0]
-    data[point.x - 1, point.y + 1] = [0, 0, 0]
-    data[point.x, point.y - 1] = [0, 0, 0]
-    data[point.x, point.y] = [0, 0, 0]
-    data[point.x, point.y + 1] = [0, 0, 0]
-    data[point.x + 1, point.y - 1] = [0, 0, 0]
-    data[point.x + 1, point.y] = [0, 0, 0]
-    data[point.x + 1, point.y + 1] = [0, 0, 0]
+        return data
 
-image = Image.fromarray(data)
-image.show()
+
+def main():
+    generator = VoronoiGenerator(40)
+    data = generator.generate()
+    image = Image.fromarray(data)
+    image.show()
+
+main()
