@@ -16,6 +16,7 @@ class Point:
     # This can be modified
     def dist(self, x, y):
         return (x - self.x) ** 2 + (y - self.y) ** 2
+        # return abs(x - self.x) + abs(y - self.y)
 
 
 class VoronoiGenerator:
@@ -47,7 +48,9 @@ class VoronoiGenerator:
         for point in points:
             for x_off in [-1, 0, 1]:
                 for y_off in [-1, 0, 1]:
-                    data[point.x + x_off, point.y + y_off] = [0, 0, 0]
+                    x = max(0, min(point.x + x_off, 511))
+                    y = max(0, min(point.y + y_off, 511))
+                    data[x, y] = [0, 0, 0]
 
         return data
 
